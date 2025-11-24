@@ -1,46 +1,41 @@
 # 152. Maximum Product Subarray
-Difficulty: Medium
-Solved: 23 Nov 2025
-Time: O(n)
-Space: O(1)
+# Difficulty: Medium
+# Date Solved: 23 Nov 2025
+# Time: O(n) | Space: O(1)
 
-Insight (one killer sentence):
-→ Keep running max and min products because negatives flip losers into winners, so you can't drop the lows.
+"""
+Problem Summary
+Given an integer array nums, find the contiguous subarray with the largest product and return the product.
 
-Edge cases handled:
-→ All negatives: grabs the largest (least negative) product by tracking mins
-→ Zeros: resets trackers without killing the global max
-→ Single element: initializes and returns directly
-→ Mix of positives/negatives/zeros: handles flips via min/max updates
+Key Observations
+- A negative number can turn a current minimum into a new maximum when multiplied by another negative.
+- Zeros break the continuity and reset the running product.
+- We must maintain both the maximum and minimum running products at each position.
 
-Example walk-through:
-nums = [2,3,-2,4]
-→ res = 2, cur_max=2, cur_min=2
-→ n=3: candidates max(3, 2*3=6, 2*3=6) → cur_max=6; min(3,2*3=6,2*3=6) → cur_min=3; res=6
-→ n=-2: candidates max(-2, 6*-2=-12, 3*-2=-6) → cur_max=-2; min(-2,6*-2=-12,3*-2=-6) → cur_min=-12; res=6 (no change)
-→ n=4: candidates max(4, -2*4=-8, -12*4=-48) → cur_max=4; min(4,-2*4=-8,-12*4=-48) → cur_min=-48; res=6
-Output: 6 (from 2*3)
+Solution Approach
+Dynamic programming tracking two values:
+- cur_max: largest product ending at current index
+- cur_min: smallest product ending at current index
+When a negative number appears, swap cur_max and cur_min before updating.
+
+This ensures we never lose the potential for a larger product after an odd number of negatives.
+"""
 
 from typing import List
 
 class Solution:
     def maxProduct(self, nums: List[int]) -> int:
-        if not nums:
-            return 0  # Edge: empty, but LC guarantees >=1
-        
         res = nums[0]
         cur_max = nums[0]
         cur_min = nums[0]
         
         for n in nums[1:]:
-            # Candidates for new max/min: standalone n, or extend from prev max/min
-            cand_max = max(n, cur_max * n, cur_min * n)
-            cand_min = min(n, cur_max * n, cur_min * n)
+            if n < 0:
+                cur_max, cur_min = cur_min, cur_max
             
-            cur_max = cand_max
-            cur_min = cand_min
+            cur_max = max(n, cur_max * n)
+            cur_min = min(n, cur_min * n)
             
-            # Zero reset happens implicitly if n=0 (cand_max/cand_min=0)
             res = max(res, cur_max)
         
         return res
